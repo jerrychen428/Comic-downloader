@@ -116,25 +116,30 @@ class MyFormMain ( wx.Frame ):
 
         Download_Queue = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Download Queue" ), wx.VERTICAL )
 
-        self.m_treeListCtrl1 = wx.dataview.TreeListCtrl( Download_Queue.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.dataview.TL_DEFAULT_STYLE )
-        self.m_treeListCtrl1.SetMinSize( wx.Size( -1,150 ) )
+        self.queue_table  = wx.dataview.DataViewListCtrl( Download_Queue.GetStaticBox(), wx.ID_ANY, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        self.queue_table.SetMinSize( wx.Size( 600,150 ) )
+
+        Download_Queue.Add( self.queue_table , 0, wx.ALL, 5 )
+        # Setup headers
+        columns = [("Comic Name", 100), ("Chapter", 100), ("Save Path", 200), ("Status", 100), ("Progress", 100)]
+        for idx, (col_name, col_width) in enumerate(columns):
+            self.queue_table.AppendTextColumn(col_name, width=col_width)        
+        
+
+        bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.Add_to_queue = wx.Button( Download_Queue.GetStaticBox(), wx.ID_ANY, u"Add to queue", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer5.Add( self.Add_to_queue, 0, wx.ALL, 5 )
+
+        self.Start_download = wx.Button( Download_Queue.GetStaticBox(), wx.ID_ANY, u"Start download", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer5.Add( self.Start_download, 0, wx.ALL, 5 )
 
 
-        Download_Queue.Add( self.m_treeListCtrl1, 1, wx.EXPAND |wx.ALL, 5 )
-
-        bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
-
-        self.Add_to_queue = wx.Button( Download_Queue.GetStaticBox(), wx.ID_ANY, u"Add to Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer2.Add( self.Add_to_queue, 0, wx.ALL, 5 )
-
-        self.Start_Download = wx.Button( Download_Queue.GetStaticBox(), wx.ID_ANY, u"Start Download", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer2.Add( self.Start_Download, 0, wx.ALL, 5 )
-
-
-        Download_Queue.Add( bSizer2, 0, wx.EXPAND, 5 )
+        Download_Queue.Add( bSizer5, 1, wx.EXPAND, 5 )
 
 
         bSizer1.Add( Download_Queue, 0, wx.EXPAND, 5 )
+
 
 
         self.SetSizer( bSizer1 )
@@ -149,7 +154,8 @@ class MyFormMain ( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnAdjustFontSize, id = self.Set_Font_size.GetId() )
         self.Browse.Bind( wx.EVT_BUTTON, self.browse_save_path )
         self.Open_Folder.Bind( wx.EVT_BUTTON, self.open_download_folder )
-        self.Clear.Bind( wx.EVT_BUTTON, self.clear_log )
+        self.Clear.Bind( wx.EVT_BUTTON, self.clear_log )    
+        self.queue_table.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)# 右键菜单绑定
 
         # self adjustment
         self.Fit()
@@ -241,10 +247,18 @@ class MyFormMain ( wx.Frame ):
     def clear_log(self, event):
         self.m_textCtrl3.Clear()
 
+    def show_context_menu(self, event):
+        menu = wx.Menu()
+        menu.Append(wx.ID_ANY, "Option 1")
+        menu.Append(wx.ID_ANY, "Option 2")
+        self.PopupMenu(menu)
+        menu.Destroy()
+
 if __name__ == '__main__':
     app = wx.App(False)
     frame = MyFormMain(None)
     frame.Fit()
     frame.Show()
     app.MainLoop()
+
 
