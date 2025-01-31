@@ -103,7 +103,7 @@ class MyFormMain ( wx.Frame ):
 
         Log_Output = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Log Output" ), wx.VERTICAL )
 
-        self.m_textCtrl3 = wx.TextCtrl( Log_Output.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_MULTILINE|wx.TE_NO_VSCROLL|wx.TE_RICH2 )
+        self.m_textCtrl3 = wx.TextCtrl( Log_Output.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_RICH2|wx.VSCROLL )
         self.m_textCtrl3.SetMinSize( wx.Size( -1,150 ) )
 
         Log_Output.Add( self.m_textCtrl3, 0, wx.ALL|wx.EXPAND, 5 )
@@ -111,7 +111,37 @@ class MyFormMain ( wx.Frame ):
         self.Clear = wx.Button( Log_Output.GetStaticBox(), wx.ID_ANY, u"Clear", wx.DefaultPosition, wx.DefaultSize, 0 )
         Log_Output.Add( self.Clear, 0, wx.ALL, 5 )
 
+        bSizer3 = wx.BoxSizer( wx.HORIZONTAL )
 
+        self.Total_Process = wx.StaticText( Log_Output.GetStaticBox(), wx.ID_ANY, u"Total_Process", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.Total_Process.Wrap( -1 )
+
+        self.Total_Process.SetMinSize( wx.Size( 90,-1 ) )
+
+        bSizer3.Add( self.Total_Process, 0, wx.ALL, 5 )
+
+        self.Total_Process = wx.Gauge( Log_Output.GetStaticBox(), wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
+        self.Total_Process.SetValue( 0 )
+        bSizer3.Add( self.Total_Process, 0, wx.ALL, 5 )
+
+
+        Log_Output.Add( bSizer3, 0, wx.EXPAND, 5 )
+
+        bSizer31 = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.Image_Process = wx.StaticText( Log_Output.GetStaticBox(), wx.ID_ANY, u"Image_Process", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.Image_Process.Wrap( -1 )
+
+        self.Image_Process.SetMinSize( wx.Size( 90,-1 ) )
+
+        bSizer31.Add( self.Image_Process, 0, wx.ALL, 5 )
+
+        self.Image_Process1 = wx.Gauge( Log_Output.GetStaticBox(), wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
+        self.Image_Process1.SetValue( 0 )
+        bSizer31.Add( self.Image_Process1, 0, wx.ALL, 5 )
+
+
+        Log_Output.Add( bSizer31, 1, wx.EXPAND, 5 )
         bSizer1.Add( Log_Output, 0, wx.EXPAND, 5 )
 
         Download_Queue = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Download Queue" ), wx.VERTICAL )
@@ -156,6 +186,7 @@ class MyFormMain ( wx.Frame ):
         self.Open_Folder.Bind( wx.EVT_BUTTON, self.open_download_folder )
         self.Clear.Bind( wx.EVT_BUTTON, self.clear_log )    
         self.queue_table.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)# 右键菜单绑定
+        self.Analyze.Bind( wx.EVT_BUTTON, self.start_analyze )###
 
         # self adjustment
         self.Fit()
@@ -205,6 +236,9 @@ class MyFormMain ( wx.Frame ):
             newFont = dialog.GetFontData().GetChosenFont()
             self.SetGlobalFont(newFont)
         dialog.Destroy()
+
+    def start_analyze( self, event ):
+        event.Skip()
 
     def SetGlobalFont(self, font):
         # 遍历所有顶级窗口并设置字体
@@ -260,5 +294,6 @@ if __name__ == '__main__':
     frame.Fit()
     frame.Show()
     app.MainLoop()
+
 
 
