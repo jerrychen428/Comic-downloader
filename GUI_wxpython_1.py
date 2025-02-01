@@ -12,6 +12,7 @@ import subprocess
 import wx
 import wx.xrc
 import wx.dataview
+import wx.lib.scrolledpanel as scrolled
 
 ###########################################################################
 ## Class MyFormMain
@@ -187,6 +188,9 @@ class MyFormMain ( wx.Frame ):
         self.Clear.Bind( wx.EVT_BUTTON, self.clear_log )    
         self.queue_table.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)# 右键菜单绑定
         self.Analyze.Bind( wx.EVT_BUTTON, self.start_analyze )###
+        self.Add_to_queue.Bind( wx.EVT_BUTTON, self.add_to_queue )
+        self.Start_download.Bind( wx.EVT_BUTTON, self.Start_1 )
+
 
         # self adjustment
         self.Fit()
@@ -238,7 +242,7 @@ class MyFormMain ( wx.Frame ):
         dialog.Destroy()
 
     def start_analyze( self, event ):
-        event.Skip()
+        self.log_message("Press analyze button conformed ")
 
     def SetGlobalFont(self, font):
         # 遍历所有顶级窗口并设置字体
@@ -287,6 +291,17 @@ class MyFormMain ( wx.Frame ):
         menu.Append(wx.ID_ANY, "Option 2")
         self.PopupMenu(menu)
         menu.Destroy()
+
+    def on_confirm_selection(self, event):
+        selected_chapters = [text for chk, text in self.chapter_checks if chk.GetValue()]
+        print("Selected Chapters:", selected_chapters)
+        self.chapter_window.Destroy()
+
+    def add_to_queue( self, event ):
+        self.log_message("Press add_to_queue button conformed ")
+
+    def Start_1( self, event ):
+        self.log_message("Press Start_1 button conformed ")
 
 if __name__ == '__main__':
     app = wx.App(False)

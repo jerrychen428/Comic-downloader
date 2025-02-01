@@ -1,7 +1,5 @@
 import threading
 import os
-from tkinter import *
-from tkinter import filedialog, Tk, ttk, messagebox, scrolledtext
 from GUI_wxpython_1 import MyFormMain
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -13,11 +11,12 @@ import time
 import wx
 import wx.xrc
 import wx.dataview
+import wx.lib.scrolledpanel as scrolled
 
 class ComicDownloader(MyFormMain):
 
-    def __init__(self, root):
-        super().__init__(root)
+    def __init__(self, parent):
+        super().__init__(parent)
                 
         # Initialize variables
         self.driver = None
@@ -50,14 +49,14 @@ class ComicDownloader(MyFormMain):
         self.options.add_argument('--headless')
         self.driver = webdriver.Chrome(options=self.options)
 
-    def start_analyze(self):
-        url = self.url_entry.get().strip()
+    def start_analyze(self, event):
+        url = self.URL.GetValue().strip()
         if not url:
-            messagebox.showerror("Error", "Please enter a URL.")
+            self.log_message("Error, Please enter a URL.\n")
             return
         
-        self.log_message("開始分析...")
-        self.root.update_idletasks()
+        self.log_message("開始分析...\n")
+#         self.root.update_idletasks()
 
         threading.Thread(target=self.analyze_chapters, args=(url,)).start()
 
@@ -77,11 +76,11 @@ class ComicDownloader(MyFormMain):
             chapter_id = chapter['id']
             self.chapter_text = chapter.text.strip()
             self.chapters.append((chapter_id, self.chapter_text))
-            self.log_message(f"找到章節: {self.chapter_text}")
-            self.root.update_idletasks()
+            self.log_message(f"找到章節: {self.chapter_text}\n")
+#             self.root.update_idletasks()
 
-        self.log_message("章節分析完畢")
-        self.root.update_idletasks()
+        self.log_message("章節分析完畢\n")
+#         self.root.update_idletasks()
         
         # Show chapter selection popup
         self.show_chapter_popup()
@@ -306,10 +305,41 @@ class ComicDownloader(MyFormMain):
         task_id = self.queue_table.get_children()[task_index]
         self.queue_table.set(task_id, "Status", self.task_status[task_index])
         
+    def show_chapter_popup(self):
+#         chapters = [("1", "Chapter 1"), ("2", "Chapter 2"), ("3", "Chapter 3")]  # 示例章节列表
+
+        # 创建弹出窗口
+        self.chapter_window = wx.Frame(self, title="Select Chapters", size=(600, 350))
+        panel = wx.Panel(self.chapter_window)
+        panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        panel.SetSizer(panel_sizer)
+
+        scrolled_panel = scrolled.ScrolledPanel(panel, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER)
+        scrolled_panel.SetupScrolling()
+        scrolled_sizer = wx.BoxSizer(wx.VERTICAL)
+        scrolled_panel.SetSizer(scrolled_sizer)
+
+        # 添加复选框到滚动面板
+        self.chapter_checks = []
+        for chapter_id, chapter_text in self.chapters:
+            chk = wx.CheckBox(scrolled_panel, label=chapter_text)
+            scrolled_sizer.Add(chk, 0, wx.ALL, 5)
+            self.chapter_checks.append((chk, chapter_text))
+
+        # 确认按钮
+        confirm_button = wx.Button(panel, label="Confirm Selection")
+        confirm_button.Bind(wx.EVT_BUTTON, self.on_confirm_selection)
+
+        # 将滚动面板和确认按钮添加到面板的 sizer
+        panel_sizer.Add(scrolled_panel, 1, wx.EXPAND | wx.ALL, 5)
+        panel_sizer.Add(confirm_button, 0, wx.ALL | wx.CENTER, 5)
+
+        self.chapter_window.Show()
+        
 if __name__ == "__main__":
 
     app = wx.App(False)
-    frame = MyFormMain(None)
+    frame = ComicDownloader(None)
     frame.Fit()
     frame.Show()
     app.MainLoop()
