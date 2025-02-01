@@ -56,14 +56,13 @@ class ComicDownloader(MyFormMain):
             return
         
         self.log_message("開始分析...\n")
-#         self.root.update_idletasks()
 
-        threading.Thread(target=self.analyze_chapters, args=(url,)).start()
+#         threading.Thread(target=self.analyze_chapters, args=(url,)).start() # 無法使用threading會導致彈出視窗馬上被關閉
 
-    def analyze_chapters(self, url):
+#     def analyze_chapters(self, url):
         # Close any existing popup window
-        if self.chapter_window and self.chapter_window.winfo_exists():
-            self.chapter_window.destroy()
+        if hasattr(self, 'chapter_window') and self.chapter_window and self.chapter_window.IsShown():
+            self.chapter_window.Destroy()
             
         self.driver.get(url)
         self.soup = BeautifulSoup(self.driver.page_source, "lxml")
@@ -77,17 +76,15 @@ class ComicDownloader(MyFormMain):
             self.chapter_text = chapter.text.strip()
             self.chapters.append((chapter_id, self.chapter_text))
             self.log_message(f"找到章節: {self.chapter_text}\n")
-#             self.root.update_idletasks()
 
         self.log_message("章節分析完畢\n")
-#         self.root.update_idletasks()
         
         # Show chapter selection popup
         self.show_chapter_popup()
-        
+
     def submmit_selected(self):
         # 建立己選話數清單
-        self.selected_chapters = [text for var, text in self.chapter_checks if var.get() == 1]
+        self.selected_chapters = [text for chk, text in self.chapter_checks if chk.GetValue()]# text for chk, text in self.chapter_checks if chk.GetValue()
         show_chapters =  ",".join(self.selected_chapters)
         self.log_message(f"{show_chapters}")
         self.chapter_checks = [] # submmit必需清空,避免下次疊加
@@ -99,7 +96,7 @@ class ComicDownloader(MyFormMain):
         self.current_comic_name = comicfolder_name
         self.log_message(f"{comicfolder_name}")
         
-    def add_to_queue(self):
+    def add_to_queue(self, event):
         threading.Thread(target=self.add_to_queue_1).start()
         
     def add_to_queue_1(self):
@@ -140,13 +137,13 @@ class ComicDownloader(MyFormMain):
                     self.progress_bars[task_id] = progress_bar
                     self.queue_table.set(task_id, "Progress", "0%")  # 佔位,用於嵌入進度             
         
-    def Start_1(self):
+    def Start_1(self, event):
         threading.Thread(target=self.start_download_1).start()
 
     def start_download_1(self):
         """开始下载佇列中的任务"""
         if not self.queue_data:
-            messagebox.showwarning("Warning", "No tasks in the queue to download!")
+            self.log_message("Warning", "No tasks in the queue to download!")
             return
 
         #進度條設定
@@ -263,7 +260,7 @@ class ComicDownloader(MyFormMain):
             except Exception as e:
                 self.log_message(f"下載失敗: {formatted_name}，錯誤: {e}")
                 
-            self.root.update_idletasks()
+#             self.root.update_idletasks()
         self.image_progress["value"] = 0  # Reset image progress
 
     def delete_task(self):
@@ -304,38 +301,7 @@ class ComicDownloader(MyFormMain):
         """更新任務狀態"""
         task_id = self.queue_table.get_children()[task_index]
         self.queue_table.set(task_id, "Status", self.task_status[task_index])
-        
-    def show_chapter_popup(self):
-#         chapters = [("1", "Chapter 1"), ("2", "Chapter 2"), ("3", "Chapter 3")]  # 示例章节列表
 
-        # 创建弹出窗口
-        self.chapter_window = wx.Frame(self, title="Select Chapters", size=(600, 350))
-        panel = wx.Panel(self.chapter_window)
-        panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        panel.SetSizer(panel_sizer)
-
-        scrolled_panel = scrolled.ScrolledPanel(panel, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER)
-        scrolled_panel.SetupScrolling()
-        scrolled_sizer = wx.BoxSizer(wx.VERTICAL)
-        scrolled_panel.SetSizer(scrolled_sizer)
-
-        # 添加复选框到滚动面板
-        self.chapter_checks = []
-        for chapter_id, chapter_text in self.chapters:
-            chk = wx.CheckBox(scrolled_panel, label=chapter_text)
-            scrolled_sizer.Add(chk, 0, wx.ALL, 5)
-            self.chapter_checks.append((chk, chapter_text))
-
-        # 确认按钮
-        confirm_button = wx.Button(panel, label="Confirm Selection")
-        confirm_button.Bind(wx.EVT_BUTTON, self.on_confirm_selection)
-
-        # 将滚动面板和确认按钮添加到面板的 sizer
-        panel_sizer.Add(scrolled_panel, 1, wx.EXPAND | wx.ALL, 5)
-        panel_sizer.Add(confirm_button, 0, wx.ALL | wx.CENTER, 5)
-
-        self.chapter_window.Show()
-        
 if __name__ == "__main__":
 
     app = wx.App(False)

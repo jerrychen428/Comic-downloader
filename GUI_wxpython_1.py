@@ -187,11 +187,11 @@ class MyFormMain ( wx.Frame ):
         self.Open_Folder.Bind( wx.EVT_BUTTON, self.open_download_folder )
         self.Clear.Bind( wx.EVT_BUTTON, self.clear_log )    
         self.queue_table.Bind(wx.EVT_CONTEXT_MENU, self.show_context_menu)# 右键菜单绑定
-        self.Analyze.Bind( wx.EVT_BUTTON, self.start_analyze )###
+        self.Analyze.Bind( wx.EVT_BUTTON, self.start_analyze )
         self.Add_to_queue.Bind( wx.EVT_BUTTON, self.add_to_queue )
         self.Start_download.Bind( wx.EVT_BUTTON, self.Start_1 )
 
-
+        self.chapters = [("1", "Chapter 1"), ("2", "Chapter 2"), ("3", "Chapter 3")]
         # self adjustment
         self.Fit()
 
@@ -200,7 +200,7 @@ class MyFormMain ( wx.Frame ):
 
 
     # Virtual event handlers, override them in your derived class
-    def OnOpenFile( self, event ):
+    def OnOpenFile(self, event):
         with wx.FileDialog(self, "Open file", wildcard="All files (*.*)|*.*",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -242,7 +242,8 @@ class MyFormMain ( wx.Frame ):
         dialog.Destroy()
 
     def start_analyze( self, event ):
-        self.log_message("Press analyze button conformed ")
+        self.log_message("Press analyze button conformed\n ")
+        self.show_chapter_popup()
 
     def SetGlobalFont(self, font):
         # 遍历所有顶级窗口并设置字体
@@ -292,16 +293,47 @@ class MyFormMain ( wx.Frame ):
         self.PopupMenu(menu)
         menu.Destroy()
 
-    def on_confirm_selection(self, event):
-        selected_chapters = [text for chk, text in self.chapter_checks if chk.GetValue()]
-        print("Selected Chapters:", selected_chapters)
-        self.chapter_window.Destroy()
-
     def add_to_queue( self, event ):
-        self.log_message("Press add_to_queue button conformed ")
+        self.log_message("Press add_to_queue button conformed\n")
 
     def Start_1( self, event ):
-        self.log_message("Press Start_1 button conformed ")
+        self.log_message("Press Start_1 button conformed\n ")
+
+    def show_chapter_popup(self):
+#         chapters = [("1", "Chapter 1"), ("2", "Chapter 2"), ("3", "Chapter 3")]  # 示例章节列表
+
+        # 创建弹出窗口
+        self.chapter_window = wx.Frame(self, title="Select Chapters", size=(600, 350))
+        panel = wx.Panel(self.chapter_window)
+        panel_sizer = wx.BoxSizer(wx.VERTICAL)
+        panel.SetSizer(panel_sizer)
+
+        scrolled_panel = scrolled.ScrolledPanel(panel, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER)
+        scrolled_panel.SetupScrolling()
+        scrolled_sizer = wx.BoxSizer(wx.VERTICAL)
+        scrolled_panel.SetSizer(scrolled_sizer)
+
+        # 添加复选框到滚动面板
+        self.chapter_checks = []
+        for chapter_id, chapter_text in self.chapters:
+            chk = wx.CheckBox(scrolled_panel, label=chapter_text)
+            scrolled_sizer.Add(chk, 0, wx.ALL, 5)
+            self.chapter_checks.append((chk, chapter_text))
+
+        # 确认按钮
+        confirm_button = wx.Button(panel, label="Confirm Selection")
+        confirm_button.Bind(wx.EVT_BUTTON, self.on_confirm_selection)
+
+        # 将滚动面板和确认按钮添加到面板的 sizer
+        panel_sizer.Add(scrolled_panel, 1, wx.EXPAND | wx.ALL, 5)
+        panel_sizer.Add(confirm_button, 0, wx.ALL | wx.CENTER, 5)
+
+        self.chapter_window.Show()
+
+    def on_confirm_selection(self, event):
+        selected_chapters = [text for chk, text in self.chapter_checks if chk.GetValue()]
+        self.log_message(f"Selected Chapters:{selected_chapters}")
+        self.chapter_window.Destroy()
 
 if __name__ == '__main__':
     app = wx.App(False)
