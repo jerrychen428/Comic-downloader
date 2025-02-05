@@ -130,18 +130,6 @@ class MyFormMain ( wx.Frame ):
 
         bSizer31 = wx.BoxSizer( wx.HORIZONTAL )
 
-        self.Image_Process = wx.StaticText( Log_Output.GetStaticBox(), wx.ID_ANY, u"Image_Process", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.Image_Process.Wrap( -1 )
-
-        self.Image_Process.SetMinSize( wx.Size( 90,-1 ) )
-
-        bSizer31.Add( self.Image_Process, 0, wx.ALL, 5 )
-
-        self.Image_Process1 = wx.Gauge( Log_Output.GetStaticBox(), wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
-        self.Image_Process1.SetValue( 0 )
-        bSizer31.Add( self.Image_Process1, 0, wx.ALL, 5 )
-
-
         Log_Output.Add( bSizer31, 1, wx.EXPAND, 5 )
         bSizer1.Add( Log_Output, 0, wx.EXPAND, 5 )
 
@@ -152,10 +140,10 @@ class MyFormMain ( wx.Frame ):
 
         Download_Queue.Add( self.queue_table , 0, wx.ALL, 5 )
         # Setup headers
-        columns = [("Comic Name", 100), ("Chapter", 100), ("Save Path", 200), ("Status", 100), ("Progress", 100)]
+        columns = [("Comic Name", 100), ("Chapter", 100), ("Save Path", 200), ("Status", 100)]# , ("Progress", 100)
         for idx, (col_name, col_width) in enumerate(columns):
             self.queue_table.AppendTextColumn(col_name, width=col_width)        
-        
+        self.queue_table.AppendProgressColumn("Progress", 100)
 
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -212,7 +200,7 @@ class MyFormMain ( wx.Frame ):
                     self.textCtrl.SetValue(file.read())  # 假設有一個名為 textCtrl 的文本控制項
             except IOError:
                 wx.LogError(f"Cannot open file '{pathname}'.")
-                self.log_message(f"Cannot open file '{pathname}'.")
+                self.log_message(f"Cannot open file '{pathname}'.\n")
 
     def OnSaveFile( self, event ):
         with wx.FileDialog(self, "Save file", wildcard="All files (*.*)|*.*",
@@ -226,7 +214,7 @@ class MyFormMain ( wx.Frame ):
                     file.write(self.textCtrl.GetValue())  # 假設有一個名為 textCtrl 的文本控制項
             except IOError:
                 wx.LogError(f"Cannot save current data in file '{pathname}'.")
-                self.log_message(f"Cannot save current data in file '{pathname}'.")
+                self.log_message(f"Cannot save current data in file '{pathname}'.\n")
                 
     def OnExit( self, event ):
         self.Close(True)
@@ -234,7 +222,8 @@ class MyFormMain ( wx.Frame ):
     def OnAdjustFontSize(self, event):
         # 显示字体选择对话框
         fontData = wx.FontData()
-        fontData.EnableEffects(False)  # 禁用颜色等效果，仅调整字体大小
+        # 禁用颜色等效果，仅调整字体大小
+        fontData.EnableEffects(False)  
         dialog = wx.FontDialog(self, fontData)
         if dialog.ShowModal() == wx.ID_OK:
             newFont = dialog.GetFontData().GetChosenFont()
@@ -254,14 +243,18 @@ class MyFormMain ( wx.Frame ):
         window.SetFont(font)
         for child in window.GetChildren():
             self.ApplyFontRecursively(child, font)
-        window.Layout()# 重新布局以适应新的字体大小
-        self.Fit() #自適應視窗大小調整
+        # 重新布局以适应新的字体大小
+        window.Layout()
+        #自適應視窗大小調整
+        self.Fit() 
         
     def browse_save_path(self, event):
         with wx.DirDialog(self, "选择保存路径", style=wx.DD_DEFAULT_STYLE) as dirDialog:
             if dirDialog.ShowModal() == wx.ID_OK:
-                self.save_path = os.path.normpath(dirDialog.GetPath())  # 标准化路径
-                self.set_save_path(self.save_path)  # 在文本框中显示选择的路径
+                # 标准化路径
+                self.save_path = os.path.normpath(dirDialog.GetPath())  
+                # 在文本框中显示选择的路径
+                self.set_save_path(self.save_path)  
                 self.log_message("Set Path Successful\n")
             else:
                 self.log_message("未选择路径")
@@ -332,7 +325,8 @@ class MyFormMain ( wx.Frame ):
 
     def on_confirm_selection(self, event):
         selected_chapters = [text for chk, text in self.chapter_checks if chk.GetValue()]
-        self.log_message(f"Selected Chapters:{selected_chapters}")
+        for selected_chapter in selected_chapters:
+            self.log_message(f"Selected Chapters:{selected_chapter}\n")
         self.chapter_window.Destroy()
 
 if __name__ == '__main__':
