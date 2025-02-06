@@ -138,7 +138,7 @@ class MyFormMain ( wx.Frame ):
         self.queue_table  = wx.dataview.DataViewListCtrl( Download_Queue.GetStaticBox(), wx.ID_ANY, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.queue_table.SetMinSize( wx.Size( 600,150 ) )
 
-        Download_Queue.Add( self.queue_table , 0, wx.ALL, 5 )
+        Download_Queue.Add( self.queue_table , 0, wx.EXPAND | wx.ALL, 5 )
         # Setup headers
         columns = [("Comic Name", 100), ("Chapter", 100), ("Save Path", 200), ("Status", 100)]# , ("Progress", 100)
         for idx, (col_name, col_width) in enumerate(columns):
@@ -178,6 +178,9 @@ class MyFormMain ( wx.Frame ):
         self.Analyze.Bind( wx.EVT_BUTTON, self.start_analyze )
         self.Add_to_queue.Bind( wx.EVT_BUTTON, self.add_to_queue )
         self.Start_download.Bind( wx.EVT_BUTTON, self.Start_1 )
+        # 绑定右键点击事件
+        self.queue_table.Bind(wx.dataview.EVT_DATAVIEW_ITEM_CONTEXT_MENU, self.OnRightClick)
+
 
         self.chapters = [("1", "Chapter 1"), ("2", "Chapter 2"), ("3", "Chapter 3")]
         # self adjustment
@@ -288,6 +291,9 @@ class MyFormMain ( wx.Frame ):
 
     def add_to_queue( self, event ):
         self.log_message("Press add_to_queue button conformed\n")
+        self.queue_table.AppendItem(["海賊王", "第一話", "N/A", "Ready", 0])
+        self.queue_table.AppendItem(["海賊王", "第二話", "N/A", "Pause", 0])
+        self.queue_table.AppendItem(["海賊王", "第三話", "N/A", "Ready", 0])
 
     def Start_1( self, event ):
         self.log_message("Press Start_1 button conformed\n ")
@@ -329,12 +335,41 @@ class MyFormMain ( wx.Frame ):
             self.log_message(f"Selected Chapters:{selected_chapter}\n")
         self.chapter_window.Destroy()
 
+    def OnRightClick(self, event):
+        # 获取点击的项
+        item = event.GetItem()
+        if item:
+            # 创建上下文菜单
+            menu = wx.Menu()
+            pause_item = menu.Append(wx.ID_ANY, "暂停任务")
+            resume_item = menu.Append(wx.ID_ANY, "恢复任务")
+            delete_item = menu.Append(wx.ID_ANY, "删除任务")
+
+            # 绑定菜单项事件
+            self.Bind(wx.EVT_MENU, lambda evt: self.pause_task(evt, item), pause_item)
+            self.Bind(wx.EVT_MENU, lambda evt: self.resume_task(evt, item), resume_item)
+            self.Bind(wx.EVT_MENU, lambda evt: self.delete_task(evt, item), delete_item)
+
+            # 显示上下文菜单
+            self.PopupMenu(menu)
+            menu.Destroy()
+
+    def pause_task(self, event, item):
+        self.queue_table.SetValue("Paused", self.queue_table.ItemToRow(item), 3)
+
+    def resume_task(self, event, item):
+        self.queue_table.SetValue("Running", self.queue_table.ItemToRow(item), 3)
+
+    def delete_task(self, event, item):
+        self.queue_table.DeleteItem(self.queue_table.ItemToRow(item))
+
 if __name__ == '__main__':
     app = wx.App(False)
     frame = MyFormMain(None)
     frame.Fit()
     frame.Show()
     app.MainLoop()
+
 
 
 

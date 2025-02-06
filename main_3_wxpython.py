@@ -125,8 +125,8 @@ class ComicDownloader(MyFormMain):
             return
 
         #進度條設定
-#         self.Total_progress["maximum"] = len(self.queue_data)
-#         self.Total_progress["value"] = 0
+        self.Total_Process.SetValue(0) # 重新歸0
+        Total_tasks = len(self.queue_data)
         
         # 從佇列中一個一個取出任務的必要訊息
 #         while self.queue_data:
@@ -148,14 +148,14 @@ class ComicDownloader(MyFormMain):
             # 開始下載
             try:
                 self.download_selected_chapters()
-#                 self.Total_progress["value"] += 1
+                self.Total_Process.SetValue( int((self.i+1)/Total_tasks*100) )
             except Exception as e:
                 self.log_message(f"任務失敗: {e}\n")
                 self.task_status[self.i] = "Error"
             self.task_status[self.i] = "Completed"
             self.update_task_status(self.i)            
         self.log_message("*****全部下載完成*****\n")
-#         self.Total_progress["value"] = 0 # 重新歸0
+
 
     def download_selected_chapters(self):
         #檢查self.selected_chapters是否為空
