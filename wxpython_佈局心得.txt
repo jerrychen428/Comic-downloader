@@ -1,0 +1,4 @@
+wxpython 佈局心得
+1. self.Fit() #self adjustment window
+2. wxFlexGridSizer好用
+3. wxExpand 可以使元件延展
